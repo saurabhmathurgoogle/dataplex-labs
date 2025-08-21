@@ -9,16 +9,16 @@
 pip3 install -r bg_import/csv_import/requirements.txt
 ```
 
-### Import
-```
-python3 bg_import/csv_import/glossary_import.py 
-```
-  
 ### Access token
 
 The below command is required to access the sheet, upload file to GCS and call CreateMetadataJob() API
 ```
 gcloud auth application-default login --scopes="https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/spreadsheets.readonly"
+```
+
+### Import
+```
+python3 bg_import/csv_import/glossary_import.py 
 ```
 
 ## Sheets file schema
