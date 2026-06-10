@@ -1,0 +1,8 @@
+DATACATALOG_BASE_URL = "https://datacatalog.googleapis.com/v1"
+DATACATALOG_STAGING_BASE_URL = "https://regional-staging-datacatalog.sandbox.googleapis.com/v1"
+DATAPLEX_BASE_URL = "https://dataplex.googleapis.com/v1"
+DATAPLEX_STAGING_BASE_URL = "https://staging-dataplex.sandbox.googleapis.com/v1"
+SEARCH_BASE_URL = "https://datacatalog.googleapis.com/v1/catalog:search"
+SEARCH_STAGING_BASE_URL = "https://staging-datacatalog.sandbox.googleapis.com/v1/catalog:search"
+CLOUD_RESOURCE_MANAGER_BASE_URL = "https://cloudresourcemanager.googleapis.com/v3"
+PROJECT_NUMBER = "655216118709"
