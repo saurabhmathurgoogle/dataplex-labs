@@ -13,6 +13,7 @@ def build_context(url_parts: dict, user_project: str, project_number: str, is_st
         user_project=user_project, project=url_parts["project"],
         location_id=url_parts["location_id"], entry_group_id=url_parts["entry_group_id"],
         dc_glossary_id=url_parts["glossary_id"], dp_glossary_id=migration_utils.normalize_id(url_parts["glossary_id"]),
+        project_number=project_number,
         is_staging=is_staging
     )
     ctx.display_name = api_layer.fetch_glossary_display_name(ctx)

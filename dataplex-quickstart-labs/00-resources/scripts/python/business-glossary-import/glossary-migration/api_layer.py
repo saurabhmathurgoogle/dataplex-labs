@@ -58,11 +58,13 @@ def post_dataplex_glossary(ctx: Context) -> dict:
     return api_call_utils.fetch_api_response("POST", url, ctx.user_project, {"displayName": ctx.display_name})
 
 def get_dataplex_glossary_entry_url(ctx: Context) -> str:
-    return f"{get_dp_base_url(ctx)}/projects/{ctx.project}/locations/global/entryGroups/@dataplex/entries/projects/{ctx.project}/locations/global/glossaries/{ctx.dp_glossary_id}"
+    return f"{get_dp_base_url(ctx)}/projects/{ctx.project}/locations/global/entryGroups/@dataplex/entries/projects/{ctx.project_number}/locations/global/glossaries/{ctx.dp_glossary_id}"
 
 def update_glossary_entry_overview(ctx: Context, description: str) -> bool:
-    url = get_dataplex_glossary_entry_url(ctx)
-    payload = {"aspects": {f"{PROJECT_NUMBER}.global.overview": {"aspectType": f"{PROJECT_NUMBER}.global.overview", "data": {"content": description}}}}
+    project_number = STAGING_PROJECT_NUMBER if getattr(ctx, "is_staging", False) else PROD_PROJECT_NUMBER
+    url = f"{get_dataplex_glossary_entry_url(ctx)}?updateMask=aspects&aspectKeys={project_number}.global.overview"
+    aspect_type_full = f"projects/{project_number}/locations/global/aspectTypes/overview"
+    payload = {"aspects": {f"{project_number}.global.overview": {"aspectType": aspect_type_full, "data": {"content": description}}}}
     res = api_call_utils.fetch_api_response("PATCH", url, ctx.user_project, payload)
     return not bool(res.get("error_msg"))
 
