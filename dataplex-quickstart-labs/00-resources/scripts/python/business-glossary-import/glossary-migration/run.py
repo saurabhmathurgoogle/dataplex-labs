@@ -36,11 +36,17 @@ def scope_urls(urls: list, project_id: str, project_number: str) -> list:
             scoped.append(u)
     return scoped
 
-def process_glossaries_concurrently(urls: list, user_project: str, proj_num: str, is_staging: bool):
+def process_glossaries_concurrently(urls: list, user_project: str, proj_num: str, is_staging: bool) -> tuple:
+    successes = 0
+    failures = 0
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [executor.submit(process_glossary, u, user_project, proj_num, is_staging) for u in urls]
         for f in as_completed(futures):
-            f.result()
+            if f.result():
+                successes += 1
+            else:
+                failures += 1
+    return successes, failures
 
 def get_target_urls(args, proj_num: str) -> list:
     urls = args.glossaries
@@ -58,8 +64,8 @@ def main(args: argparse.Namespace):
     if not urls:
         logger.warning("No glossaries found.")
         sys.exit(0)
-    process_glossaries_concurrently(urls, args.user_project, proj_num, args.staging)
-    logger.info("Migration complete.")
+    successes, failures = process_glossaries_concurrently(urls, args.user_project, proj_num, args.staging)
+    logger.info(f"Migration complete: {successes} succeeded, {failures} failed.")
 
 if __name__ == "__main__":
     main(migration_utils.get_args())

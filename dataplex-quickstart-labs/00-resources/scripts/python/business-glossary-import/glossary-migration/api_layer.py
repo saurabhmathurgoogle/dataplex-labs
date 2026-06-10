@@ -1,4 +1,3 @@
-import requests
 import time
 import api_call_utils
 import logging_utils
@@ -16,7 +15,7 @@ def get_search_base_url(is_staging: bool) -> str:
 def discover_glossaries(project_id: str, user_project: str, is_staging: bool = False) -> list:
     req = _build_glossary_search_request(project_id)
     url = get_search_base_url(is_staging)
-    res = api_call_utils.fetch_api_response(requests.post, url, user_project, req)
+    res = api_call_utils.fetch_api_response("POST", url, user_project, req)
     if res.get("error_msg"):
         logger.error(res["error_msg"])
         return []
@@ -27,7 +26,7 @@ def _get_project_url(project_id: str) -> str:
     return f"{CLOUD_RESOURCE_MANAGER_BASE_URL}/projects/{project_id}"
 
 def get_project_number(project_id: str, user_project: str) -> str:
-    res = api_call_utils.fetch_api_response(requests.get, _get_project_url(project_id), user_project)
+    res = api_call_utils.fetch_api_response("GET", _get_project_url(project_id), user_project)
     if res.get("error_msg"):
         raise Exception(res["error_msg"])
     name = res.get("json", {}).get("name", "")
@@ -38,7 +37,7 @@ def get_dc_base_url(ctx: Context) -> str:
 
 def fetch_glossary_display_name(ctx: Context) -> str:
     url = f"{get_dc_base_url(ctx)}/projects/{ctx.project}/locations/{ctx.location_id}/entryGroups/{ctx.entry_group_id}/entries/{ctx.dc_glossary_id}"
-    res = api_call_utils.fetch_api_response(requests.get, url, ctx.user_project)
+    res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
     if res.get("error_msg"):
         logger.error(res["error_msg"])
         return ctx.dp_glossary_id
@@ -46,7 +45,7 @@ def fetch_glossary_display_name(ctx: Context) -> str:
 
 def get_dc_glossary_description(ctx: Context) -> str:
     url = f"{get_dc_base_url(ctx)}/projects/{ctx.project}/locations/{ctx.location_id}/entryGroups/{ctx.entry_group_id}/entries/{ctx.dc_glossary_id}"
-    res = api_call_utils.fetch_api_response(requests.get, url, ctx.user_project)
+    res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
     if res.get("error_msg"):
         return ""
     return res.get("json", {}).get("description", "")
@@ -56,7 +55,7 @@ def get_dp_base_url(ctx: Context) -> str:
 
 def post_dataplex_glossary(ctx: Context) -> dict:
     url = f"{get_dp_base_url(ctx)}/projects/{ctx.project}/locations/global/glossaries?glossary_id={ctx.dp_glossary_id}"
-    return api_call_utils.fetch_api_response(requests.post, url, ctx.user_project, {"displayName": ctx.display_name})
+    return api_call_utils.fetch_api_response("POST", url, ctx.user_project, {"displayName": ctx.display_name})
 
 def get_dataplex_glossary_entry_url(ctx: Context) -> str:
     return f"{get_dp_base_url(ctx)}/projects/{ctx.project}/locations/global/entryGroups/@dataplex/entries/projects/{ctx.project}/locations/global/glossaries/{ctx.dp_glossary_id}"
@@ -64,13 +63,13 @@ def get_dataplex_glossary_entry_url(ctx: Context) -> str:
 def update_glossary_entry_overview(ctx: Context, description: str) -> bool:
     url = get_dataplex_glossary_entry_url(ctx)
     payload = {"aspects": {f"{PROJECT_NUMBER}.global.overview": {"aspectType": f"{PROJECT_NUMBER}.global.overview", "data": {"content": description}}}}
-    res = api_call_utils.fetch_api_response(requests.patch, url, ctx.user_project, payload)
+    res = api_call_utils.fetch_api_response("PATCH", url, ctx.user_project, payload)
     return not bool(res.get("error_msg"))
 
 def poll_dataplex_glossary_entry(ctx: Context) -> bool:
     url = f"{get_dataplex_glossary_entry_url(ctx)}?view=FULL"
     for _ in range(5):
-        res = api_call_utils.fetch_api_response(requests.get, url, ctx.user_project)
+        res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
         res_json = res.get("json")
         if isinstance(res_json, dict) and "name" in res_json:
             return True
