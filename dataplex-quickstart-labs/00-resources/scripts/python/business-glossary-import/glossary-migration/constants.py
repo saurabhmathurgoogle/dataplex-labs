@@ -1,5 +1,5 @@
-DATACATALOG_BASE_URL = "https://datacatalog.googleapis.com/v1"
-DATACATALOG_STAGING_BASE_URL = "https://regional-staging-datacatalog.sandbox.googleapis.com/v1"
+DATACATALOG_BASE_URL = "https://datacatalog.googleapis.com/v2"
+DATACATALOG_STAGING_BASE_URL = "https://regional-staging-datacatalog.sandbox.googleapis.com/v2"
 DATAPLEX_BASE_URL = "https://dataplex.googleapis.com/v1"
 DATAPLEX_STAGING_BASE_URL = "https://staging-dataplex.sandbox.googleapis.com/v1"
 SEARCH_BASE_URL = "https://datacatalog.googleapis.com/v1/catalog:search"
