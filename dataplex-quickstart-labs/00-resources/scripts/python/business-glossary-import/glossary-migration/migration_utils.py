@@ -6,9 +6,12 @@ logger = logging_utils.get_logger()
 
 def normalize_id(name: str) -> str:
     if not name: return ""
-    norm = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    if not norm or not norm[0].isalpha(): norm = "g" + norm
-    return norm[:63]
+    glossary_id = name.lower()
+    glossary_id = re.sub(r"[ _]", "-", glossary_id)
+    glossary_id = re.sub(r"[^a-z0-9\-]", "-", glossary_id)
+    glossary_id = re.sub(r"-+", "-", glossary_id)
+    glossary_id = glossary_id.strip("-")
+    return glossary_id
 
 def parse_glossary_url(url: str) -> dict:
     pattern = r"projects/(?P<project>[^/]+)/locations/(?P<location_id>[^/]+)/entryGroups/(?P<entry_group_id>[^/]+)/glossaries/(?P<glossary_id>[^/?#]+)"
