@@ -1,4 +1,5 @@
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import api_call_utils
 import logging_utils
@@ -45,11 +46,10 @@ def cleanup():
     # 1. Delete Dataplex glossaries
     logger.info("Deleting Dataplex glossaries...")
     dp_success = 0
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(delete_dp_glossary, i) for i in range(1, num_glossaries + 1)]
-        for f in as_completed(futures):
-            if f.result():
-                dp_success += 1
+    for i in range(1, num_glossaries + 1):
+        if delete_dp_glossary(i):
+            dp_success += 1
+        time.sleep(0.6) # Stay below 100 writes/min (1.67 QPS)
     logger.info(f"Deleted {dp_success}/{num_glossaries} Dataplex glossaries.")
 
     # 2. Delete Data Catalog entries
