@@ -9,21 +9,22 @@ logger = logging_utils.get_logger()
 
 project = "dc-cuj-staging-playground"
 location = "us-central1"
-entry_group_id = "dc_glossary_scale_test_eg"
 num_glossaries = 300
 
-def create_eg():
-    url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups?entryGroupId={entry_group_id}"
-    res = api_call_utils.fetch_api_response("POST", url, project, {})
-    if res.get("error_msg") and "ALREADY_EXISTS" not in res["error_msg"]:
-        logger.error(f"Failed to create Entry Group: {res['error_msg']}")
-        sys.exit(1)
-    logger.info("Entry Group created or already exists.")
-
-def create_one_glossary(i):
+def create_one_glossary_v2_style(i):
+    group_id = f"dc_glossary_saurabh_auto_migration_test_glossary_{i}"
     entry_id = f"saurabh_auto_migration_test_glossary_{i}"
     display_name = f"saurabh-auto-migration-test-glossary{i}"
-    url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups/{entry_group_id}/entries?entryId={entry_id}"
+    
+    # 1. Create Entry Group
+    eg_url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups?entryGroupId={group_id}"
+    res = api_call_utils.fetch_api_response("POST", eg_url, project, {})
+    if res.get("error_msg") and "ALREADY_EXISTS" not in res["error_msg"]:
+        logger.error(f"Failed to create Entry Group {group_id}: {res['error_msg']}")
+        return False, None
+        
+    # 2. Create Entry
+    entry_url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups/{group_id}/entries?entryId={entry_id}"
     payload = {
         "displayName": display_name,
         "entryType": "glossary",
@@ -36,25 +37,26 @@ def create_one_glossary(i):
             }
         }
     }
-    res = api_call_utils.fetch_api_response("POST", url, project, payload)
+    res = api_call_utils.fetch_api_response("POST", entry_url, project, payload)
     if res.get("error_msg"):
         if "ALREADY_EXISTS" in res["error_msg"]:
-            return True, entry_id
-        logger.error(f"Failed to create glossary {entry_id}: {res['error_msg']}")
-        return False, entry_id
-    return True, entry_id
+            return True, f"projects/{project}/locations/{location}/entryGroups/{group_id}/glossaries/{entry_id}"
+        logger.error(f"Failed to create glossary {entry_id} in group {group_id}: {res['error_msg']}")
+        return False, None
+        
+    return True, f"projects/{project}/locations/{location}/entryGroups/{group_id}/glossaries/{entry_id}"
 
 def create_all_glossaries():
-    logger.info(f"Creating {num_glossaries} glossaries in Data Catalog...")
+    logger.info(f"Creating {num_glossaries} glossaries (each in its own Entry Group) in Data Catalog...")
     urls = []
     success_count = 0
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(create_one_glossary, i) for i in range(1, num_glossaries + 1)]
+        futures = [executor.submit(create_one_glossary_v2_style, i) for i in range(1, num_glossaries + 1)]
         for f in as_completed(futures):
-            success, entry_id = f.result()
+            success, url = f.result()
             if success:
                 success_count += 1
-                urls.append(f"projects/{project}/locations/{location}/entryGroups/{entry_group_id}/glossaries/{entry_id}")
+                urls.append(url)
     logger.info(f"Successfully created {success_count}/{num_glossaries} glossaries.")
     return urls
 
@@ -83,7 +85,6 @@ def run_migration(urls):
     return duration
 
 if __name__ == "__main__":
-    create_eg()
     urls = create_all_glossaries()
     if len(urls) < num_glossaries:
         logger.warning(f"Only {len(urls)}/ {num_glossaries} were created. Proceeding with migration for created ones.")
