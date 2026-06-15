@@ -65,19 +65,29 @@ def update_glossary_entry_overview(ctx: Context, description: str) -> bool:
 
 def poll_dataplex_glossary_entry(ctx: Context) -> bool:
     url = f"{get_dataplex_glossary_entry_url(ctx)}?view=FULL"
-    for _ in range(5):
+    logger.info(f"Polling for Dataplex entry: {ctx.dp_glossary_id}")
+    for i in range(5):
         res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
         res_json = res.get("json")
         if isinstance(res_json, dict) and "name" in res_json:
+            logger.info(f"Dataplex entry found: {ctx.dp_glossary_id} (attempt {i+1})")
             return True
+        logger.info(f"Dataplex entry not ready yet, sleeping... (attempt {i+1})")
         time.sleep(10)
+    logger.warning(f"Timed out waiting for Dataplex entry: {ctx.dp_glossary_id}")
     return False
 
 def complete_glossary_creation(ctx: Context) -> None:
     if poll_dataplex_glossary_entry(ctx):
         if ctx.description:
-            update_glossary_entry_overview(ctx, ctx.description)
-            logger.info("Updated overview.")
+            logger.info(f"Updating overview for {ctx.dp_glossary_id} with description: {ctx.description[:50]}...")
+            success = update_glossary_entry_overview(ctx, ctx.description)
+            if success:
+                logger.info(f"Successfully updated overview for {ctx.dp_glossary_id}.")
+            else:
+                logger.error(f"Failed to update overview for {ctx.dp_glossary_id}.")
+        else:
+            logger.info(f"No description found for {ctx.dp_glossary_id}, skipping overview update.")
 
 def create_dataplex_glossary(ctx: Context) -> None:
     res = post_dataplex_glossary(ctx)
