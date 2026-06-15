@@ -38,6 +38,6 @@ def create_glossary(base_url, group_name, entry_name, display_name, description)
 create_entry_group("https://datacatalog.googleapis.com/v1", "test_prod_eg")
 create_glossary("https://datacatalog.googleapis.com/v1", "test_prod_eg", "test_prod_glos", "Prod Glossary", "Prod Desc")
 
-create_entry_group("https://staging-datacatalog.sandbox.googleapis.com/v1", "test_staging_eg")
-create_glossary("https://staging-datacatalog.sandbox.googleapis.com/v1", "test_staging_eg", "test_staging_glos", "Staging Glossary", "Staging Desc")
+create_entry_group("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "test_staging_eg")
+create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "test_staging_eg", "test_staging_glos", "Staging Glossary", "Staging Desc")
 
