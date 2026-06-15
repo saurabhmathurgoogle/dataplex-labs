@@ -42,7 +42,12 @@ def fetch_and_populate_metadata(ctx: Context) -> None:
         raise Exception(f"Failed to fetch glossary from Data Catalog: {res['error_msg']}")
     entry_json = res.get("json", {})
     ctx.display_name = entry_json.get("displayName", ctx.dp_glossary_id)
-    ctx.description = entry_json.get("description", "")
+    
+    # Extract description from coreAspects -> business_context -> jsonContent -> description
+    core_aspects = entry_json.get("coreAspects", {})
+    business_context = core_aspects.get("business_context", {})
+    json_content = business_context.get("jsonContent", {})
+    ctx.description = json_content.get("description", "")
 
 
 def get_dp_base_url(ctx: Context) -> str:

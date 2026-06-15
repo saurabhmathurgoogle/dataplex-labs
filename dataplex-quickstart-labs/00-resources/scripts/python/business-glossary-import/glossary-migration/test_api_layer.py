@@ -26,7 +26,19 @@ class TestApiLayer(unittest.TestCase):
     @patch("api_call_utils.fetch_api_response")
     def test_fetch_and_populate_metadata_success(self, mock_fetch):
         ctx = Context("u", "p", "l", "eg", "dc", "dp", "")
-        mock_fetch.return_value = {"error_msg": None, "json": {"displayName": "My Glossary", "description": "My Desc"}}
+        mock_fetch.return_value = {
+            "error_msg": None,
+            "json": {
+                "displayName": "My Glossary",
+                "coreAspects": {
+                    "business_context": {
+                        "jsonContent": {
+                            "description": "My Desc"
+                        }
+                    }
+                }
+            }
+        }
         api_layer.fetch_and_populate_metadata(ctx)
         self.assertEqual(ctx.display_name, "My Glossary")
         self.assertEqual(ctx.description, "My Desc")
