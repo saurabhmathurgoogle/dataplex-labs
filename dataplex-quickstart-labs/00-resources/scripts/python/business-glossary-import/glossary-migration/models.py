@@ -11,3 +11,4 @@ class Context:
     project_number: str = ""
     is_staging: bool = False
     display_name: str = ""
+    description: str = ""

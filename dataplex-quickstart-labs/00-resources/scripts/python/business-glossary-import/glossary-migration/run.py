@@ -16,7 +16,7 @@ def build_context(url_parts: dict, user_project: str, project_number: str, is_st
         project_number=project_number,
         is_staging=is_staging
     )
-    ctx.display_name = api_layer.fetch_glossary_display_name(ctx)
+    api_layer.fetch_and_populate_metadata(ctx)
     return ctx
 
 def process_glossary(url: str, user_project: str, project_number: str, is_staging: bool) -> bool:

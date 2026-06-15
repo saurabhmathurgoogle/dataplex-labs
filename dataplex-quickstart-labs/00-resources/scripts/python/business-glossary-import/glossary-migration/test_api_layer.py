@@ -24,10 +24,20 @@ class TestApiLayer(unittest.TestCase):
         self.assertEqual(api_layer.discover_glossaries("p", "u", False), ["https://x/projects/1/locations/l/entryGroups/eg/entries/g"])
 
     @patch("api_call_utils.fetch_api_response")
-    def test_fetch_glossary_display_name(self, mock_fetch):
+    def test_fetch_and_populate_metadata_success(self, mock_fetch):
         ctx = Context("u", "p", "l", "eg", "dc", "dp", "")
-        mock_fetch.return_value = {"error_msg": None, "json": {"displayName": "My Glossary"}}
-        self.assertEqual(api_layer.fetch_glossary_display_name(ctx), "My Glossary")
+        mock_fetch.return_value = {"error_msg": None, "json": {"displayName": "My Glossary", "description": "My Desc"}}
+        api_layer.fetch_and_populate_metadata(ctx)
+        self.assertEqual(ctx.display_name, "My Glossary")
+        self.assertEqual(ctx.description, "My Desc")
+
+    @patch("api_call_utils.fetch_api_response")
+    def test_fetch_and_populate_metadata_failure(self, mock_fetch):
+        ctx = Context("u", "p", "l", "eg", "dc", "dp", "")
+        mock_fetch.return_value = {"error_msg": "Not Found", "json": None}
+        with self.assertRaises(Exception) as context:
+            api_layer.fetch_and_populate_metadata(ctx)
+        self.assertTrue("Failed to fetch glossary" in str(context.exception))
 
 if __name__ == "__main__":
     unittest.main()

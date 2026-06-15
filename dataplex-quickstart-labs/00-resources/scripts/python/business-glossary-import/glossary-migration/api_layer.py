@@ -35,20 +35,15 @@ def get_project_number(project_id: str, user_project: str) -> str:
 def get_dc_base_url(ctx: Context) -> str:
     return DATACATALOG_STAGING_BASE_URL if getattr(ctx, "is_staging", False) else DATACATALOG_BASE_URL
 
-def fetch_glossary_display_name(ctx: Context) -> str:
+def fetch_and_populate_metadata(ctx: Context) -> None:
     url = f"{get_dc_base_url(ctx)}/projects/{ctx.project}/locations/{ctx.location_id}/entryGroups/{ctx.entry_group_id}/entries/{ctx.dc_glossary_id}"
     res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
     if res.get("error_msg"):
-        logger.error(res["error_msg"])
-        return ctx.dp_glossary_id
-    return res.get("json", {}).get("displayName", ctx.dp_glossary_id)
+        raise Exception(f"Failed to fetch glossary from Data Catalog: {res['error_msg']}")
+    entry_json = res.get("json", {})
+    ctx.display_name = entry_json.get("displayName", ctx.dp_glossary_id)
+    ctx.description = entry_json.get("description", "")
 
-def get_dc_glossary_description(ctx: Context) -> str:
-    url = f"{get_dc_base_url(ctx)}/projects/{ctx.project}/locations/{ctx.location_id}/entryGroups/{ctx.entry_group_id}/entries/{ctx.dc_glossary_id}"
-    res = api_call_utils.fetch_api_response("GET", url, ctx.user_project)
-    if res.get("error_msg"):
-        return ""
-    return res.get("json", {}).get("description", "")
 
 def get_dp_base_url(ctx: Context) -> str:
     return DATAPLEX_STAGING_BASE_URL if getattr(ctx, "is_staging", False) else DATAPLEX_BASE_URL
@@ -80,9 +75,8 @@ def poll_dataplex_glossary_entry(ctx: Context) -> bool:
 
 def complete_glossary_creation(ctx: Context) -> None:
     if poll_dataplex_glossary_entry(ctx):
-        desc = get_dc_glossary_description(ctx)
-        if desc:
-            update_glossary_entry_overview(ctx, desc)
+        if ctx.description:
+            update_glossary_entry_overview(ctx, ctx.description)
             logger.info("Updated overview.")
 
 def create_dataplex_glossary(ctx: Context) -> None:
