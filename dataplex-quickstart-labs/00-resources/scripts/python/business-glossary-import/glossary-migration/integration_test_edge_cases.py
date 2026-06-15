@@ -37,23 +37,23 @@ def create_glossary(base_url, eg_id, entry_id, display_name=None, description=No
 
 if __name__ == "__main__":
     print("=== 1. Creating Edge Case Source Data ===")
-    create_entry_group("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "edge_eg_v1", "Edge EG")
+    create_entry_group("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "dc_glossary_edge_eg_v1", "Edge EG")
     
     # Normal case: Display name and standard description
     normal_desc = "This is a normal business glossary description for testing aspects."
-    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "edge_eg_v1", "normal_glossary_v1", display_name="Normal Glossary", description=normal_desc)
+    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "dc_glossary_edge_eg_v1", "normal_glossary_v1", display_name="Normal Glossary", description=normal_desc)
     
     # Edge case 1: No display name, no description
-    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "edge_eg_v1", "no_display_no_desc_v1", display_name=None)
+    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "dc_glossary_edge_eg_v1", "no_display_no_desc_v1", display_name=None)
     
     # Edge case 2: Emojis and very long description
     long_desc = "Long description 🚀\n" * 50
-    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "edge_eg_v1", "long_desc_emojis_v1", display_name="Edge 🚀 漢字", description=long_desc)
+    create_glossary("https://regional-staging-datacatalog.sandbox.googleapis.com/v2", "dc_glossary_edge_eg_v1", "long_desc_emojis_v1", display_name="Edge 🚀 漢字", description=long_desc)
     
     print("\n=== 2. Running Targeted Migration Scripts on Edge Cases ===")
-    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/edge_eg_v1/glossaries/normal_glossary_v1", "--staging"])
-    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/edge_eg_v1/glossaries/no_display_no_desc_v1", "--staging"])
-    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/edge_eg_v1/glossaries/long_desc_emojis_v1", "--staging"])
+    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/dc_glossary_edge_eg_v1/glossaries/normal_glossary_v1", "--staging"])
+    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/dc_glossary_edge_eg_v1/glossaries/no_display_no_desc_v1", "--staging"])
+    subprocess.run([sys.executable, "run.py", "--project", project, "--user-project", project, "--glossaries", f"projects/{project}/locations/{location}/entryGroups/dc_glossary_edge_eg_v1/glossaries/long_desc_emojis_v1", "--staging"])
 
     print("\n=== 3. Verifying Dataplex Entry Overview (Description) ===")
     # Let's verify the NORMAL description was successfully patched into Dataplex

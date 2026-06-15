@@ -7,15 +7,14 @@ import logging_utils
 
 logger = logging_utils.get_logger()
 
-project = "migration-test-458209"
+project = "dc-cuj-staging-playground"
 location = "us-central1"
-entry_group_id = "scale_test_eg"
+entry_group_id = "dc_glossary_scale_test_eg"
 num_glossaries = 300
 
 def create_eg():
-    url = f"https://datacatalog.googleapis.com/v1/projects/{project}/locations/{location}/entryGroups?entryGroupId={entry_group_id}"
-    payload = {"displayName": "Scale Test EG", "description": "Entry Group for Scale Testing"}
-    res = api_call_utils.fetch_api_response("POST", url, project, payload)
+    url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups?entryGroupId={entry_group_id}"
+    res = api_call_utils.fetch_api_response("POST", url, project, {})
     if res.get("error_msg") and "ALREADY_EXISTS" not in res["error_msg"]:
         logger.error(f"Failed to create Entry Group: {res['error_msg']}")
         sys.exit(1)
@@ -24,12 +23,18 @@ def create_eg():
 def create_one_glossary(i):
     entry_id = f"saurabh_auto_migration_test_glossary_{i}"
     display_name = f"saurabh-auto-migration-test-glossary{i}"
-    url = f"https://datacatalog.googleapis.com/v1/projects/{project}/locations/{location}/entryGroups/{entry_group_id}/entries?entryId={entry_id}"
+    url = f"https://datacatalog.googleapis.com/v2/projects/{project}/locations/{location}/entryGroups/{entry_group_id}/entries?entryId={entry_id}"
     payload = {
         "displayName": display_name,
-        "description": f"Description for glossary {i} to test scale migration overview update.",
-        "userSpecifiedType": "glossary",
-        "userSpecifiedSystem": "glossary"
+        "entryType": "glossary",
+        "coreAspects": {
+            "business_context": {
+                "aspectType": "business_context",
+                "jsonContent": {
+                    "description": f"Description for glossary {i} to test scale migration overview update."
+                }
+            }
+        }
     }
     res = api_call_utils.fetch_api_response("POST", url, project, payload)
     if res.get("error_msg"):
